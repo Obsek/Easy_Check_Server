@@ -4,48 +4,58 @@ $Output = @()
 
 $fichierliste = Get-content "liste_srv.txt"
 
-#valeur à modifier @voir comment c'est foutu dans l'export PIC 
 $header = 'node', 'Date_Fin_Maintenance', 'VM', 'Groupe', 'var5', 'var6', 'var10'
 
 $fichierexport = Import-Csv -Path "export.csv" -Delimiter ";" -Header $header
 
+$continue = $true
 
-Write-Host "===================================================="
-Write-Host "          _                _              _ "       
-Write-Host "         /\ \            /\ \            / /\ "     
-Write-Host "        /  \ \          /  \ \          / /  \ "    
-Write-Host "       / /\ \ \        / /\ \ \        / / /\ \__ " 
-Write-Host "      / / /\ \_\      / / /\ \ \      / / /\ \___\ "
-Write-Host "     / /_/_ \/_/     / / /  \ \_\     \ \ \ \/___/ "
-Write-Host "    / /____/\       / / /    \/_/      \ \ \       "
-Write-Host "   / /\____\/      / / /           _    \ \ \      "
-Write-Host "  / / /______     / / /________   /_/\__/ / /      "
-Write-Host " / / /_______\   / / /_________\  \ \/___/ /       "
-Write-Host " \/__________/   \/____________/   \_____\/        "
+Write-Host "===================================================="                                                                
+Write-Host "        ___           ___           ___             "
+Write-Host "       /  /\         /  /\         /  /\            "
+Write-Host "      /  /  \       /  /  \       /  /  \           "
+Write-Host "     /  / /\ \     /__/ /\ \     /  / /\ \          "
+Write-Host "    /  /  \ \ \   _\_ \ \ \ \   /  / /  \ \         "
+Write-Host "   /__/ /\ \ \ \ /__/\ \ \ \ \ /__/ / \  \ \        "
+Write-Host "   \  \ \ \ \_\/ \  \ \ \ \_\/ \  \ \  \__\/        "
+Write-Host "    \  \ \ \ \    \  \ \_\ \    \  \ \              "
+Write-Host "     \  \ \_\/     \  \ \/ /     \  \ \             "
+Write-Host "      \  \ \        \  \  /       \  \ \            "
+Write-Host "       \__\/         \__\/         \__\/            "
+Write-Host "                                                    "
+Write-Host "================ Easy Check Server ================="
 Write-Host "                                                  "
-Write-Host "===================================================="
-Write-Host "===============Easy Check Server===================="
+Write-Host "Consigne :"
 Write-Host "                                                  "
-Write-Host "Consigne :                                          "
-Write-Host "1 - Crée un fichier texte nommé : liste_srv.txt, contenant les noms des serveurs a check."
-Write-Host "2 - Exporter la base PIC en format CSV et renommée le fichier : export.csv"
-Write-Host "3 - Placer les deux documents dans le même dossier que le script"
+Write-Host "1 - Crée un fichier texte nommé : liste_srv.txt, 
+    contenant les noms des serveurs a check."
+Write-Host "                                                  "
+Write-Host "2 - Exporter la base PIC en format CSV et renommée 
+    le fichier : export.csv"
+Write-Host "                                                  "	
+Write-Host "3 - Placer les deux documents dans le même dossier 
+    que le script"
+Write-Host "                                                  "	
 Write-Host "4 - Exécuter le script !"
 Write-Host "                                                  "
-	
-Write-Host "--Voulez-vous tester si les machines réponde au ping ?--"
-Write-Host "1. oui"
-Write-Host "2. non"
-Write-Host "--------------------------------------------------------"
 
-$choix = read-host "faire un choix"
+
+while ($continue) {
+	
+	Write-Host "Voulez-vous tester si les machines réponde au ping ?"
+	Write-Host ""
+	Write-Host "1. oui"
+	Write-Host "2. non"
+	Write-Host "---------------------------------------------------"
+
+	$choix = read-host "faire un choix"
 
 	switch ($choix) {
 		1 {
 			foreach ($serveur in $fichierliste){
-				if (Test-Connection -ComputerName $serveur -Count 1 -ErrorAction SilentlyContinue){
+				if (Test-Connection -ComputerName $serveur -Count 1 -ErrorAction SilentlyContinue) {
 					#ping réussi et présent dans pic
-					if ($serveur -in $fichierexport.node){
+					if ($serveur -in $fichierexport.node) {
                         Write-Host "$serveur est up et présent dans la base PIC" -ForegroundColor Green
                         $selectline = $fichierexport | Where-Object {$_.'node' -eq $serveur} 
 						$Output += "up;$selectline"
@@ -70,10 +80,11 @@ $choix = read-host "faire un choix"
 						}              
 			}
             $Output | Add-Content -path "result_check.csv"
+            $continue = $false 
 		}
 		
 		2 {
-			foreach ($serveur in $fichierliste){
+			foreach ($serveur in $fichierliste) {
 				if ($serveur -in $fichierexport.node){
                     Write-Host "$serveur est présent dans la base PIC" -ForegroundColor Green
                     $selectline = $fichierexport | Where-Object {$_.'node' -eq $serveur} 
@@ -85,11 +96,12 @@ $choix = read-host "faire un choix"
                 }
 			}
 			$Output | Add-Content -path "result_check.csv"
+            $continue = $false
 		}
 	}
-
-Write-Host "--------------------------------------------------------"
+}
+Write-Host "---------------------------------------------------"
 Write-Host "        Fichier (result_check.csv) généré"
 Write-Host "       Cette fenêtre se fermera dans 10 sec."
-Write-Host "--------------------------------------------------------"
+Write-Host "---------------------------------------------------"
 Start-Sleep -s 10
